@@ -64,11 +64,11 @@ const images = [
   },
 ];
 const galleryContainer = document.querySelector('.gallery');
-const markup = images
-  .map(
-      ({ preview, original, description }) => {
-          return `
-           <li class="gallery-item">
+if (galleryContainer) {
+    const markup = images
+        .map(
+            ({ preview, original, description }) => `
+        <li class="gallery-item">
             <a class="gallery-link" href="${original}">
                 <img
                 class="gallery-image"
@@ -77,8 +77,37 @@ const markup = images
                 alt="${description}"
                 />
             </a>
-          </li>`;
-      })
-    .join('');
-galleryContainer.insertAdjacentHTML('beforeend', markup);
-galleryContainer.addEventListener('click', onGalleryContainerClick);        
+          </li>`
+        )
+        .join('');
+    galleryContainer.insertAdjacentHTML('beforeend', markup);
+}
+if (galleryContainer) {
+    galleryContainer.addEventListener('click', (event) => {
+        event.preventDefault();
+        const galleryImage = event.target.closest('.gallery-image');
+        if (!galleryImage) 
+            return;
+        const originalImageURL = galleryImage.dataset.source;
+        const description = galleryImage.alt;
+        const instance = basicLightbox.create(`
+	<img src="${originalImageURL}"
+    alt="${description}">
+    `,
+        {
+        onShow: (instance) => {
+            const handleEscapeKey = (e) => {
+                if (e.key === 'Escape') {
+                    instance.close();
+                }
+            };
+            document.addEventListener('keydown', handleEscapeKey);
+            instance.escapeHandler = handleEscapeKey;
+        },
+                onClose: (instance) => {
+                    document.removeEventListener('keydown', instance.escapeHandler);
+                }
+        });
+    instance.show();
+});
+}
